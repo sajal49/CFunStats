@@ -1,0 +1,43 @@
+Package: CFunStats
+Title: Compact Functional Statistics
+Version: 0.0.2
+Authors@R: 
+    c(person(given = "Sajal",
+             family = "Kumar",
+             role = "aut",
+             email = "sajal49@nmsu.edu",
+	           comment = c(ORCID = "0000-0003-0930-1582")),
+      person(given = "Joe",
+             family = "Song",
+             role = c("aut", "cre"),
+             email = "joemsong@cs.nmsu.edu",
+             comment = c(ORCID = "0000-0002-6883-6547")))
+Author: 
+    Sajal Kumar [aut] (<https://orcid.org/0000-0003-0930-1582>),
+    Joe Song [aut, cre] (<https://orcid.org/0000-0002-6883-6547>)
+Maintainer: Joe Song <joemsong@cs.nmsu.edu>
+Description: Statistics to preserve continuity, capture
+    discontinuity, and identify locality of discrete functional
+    patterns. The input is discrete data of two variables. A
+    corresponding contingency table is used to encode the discrete
+    pattern. The output is functional statistics on a compact table
+    representing the original table. Rows of the compact table are the
+    trimmed and compressed version of the input table while columns
+    are the same with the input table. The compact table is obtained
+    by dynamic programming. Let the row variable be the independent
+    variable and the column variable be the dependent variable. We
+    characterize the statistical significance and the strength (effect
+    size) of the pattern being a function by the model-free functional
+    chi-squared test. The compact functional statistics can be applied
+    to time-course signals to recognize both temporal continuity and
+    discontinuity while reducing model biases.
+Imports: Rcpp, FunChisq, DescTools
+Suggests: Ckmeans.1d.dp, testthat
+Depends: R (>= 3.0)
+License: LGPL (>=3)
+Encoding: UTF-8
+LazyData: true
+LinkingTo: Rcpp
+RoxygenNote: 7.0.2
+NeedsCompilation: yes
+Packaged: 2020-02-13 20:10:25 UTC; joemsong
