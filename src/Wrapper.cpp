@@ -19,11 +19,16 @@ List DynTable(NumericVector X, NumericVector Y, NumericVector sorted_x, NumericV
   // the floor of the last cluster, to aid in backtracking.
   frame<int> clusttable(sx.size(), std::vector<int>(sx.size(),-1));
 
+  // marginalfc is a 2d matrix with the same dimension as dyntable. It keeps track of
+  // the funchisq of the marginal Y
+  frame<mydouble> marginalFC(sx.size(), std::vector<mydouble>(sx.size(),0));
+
   // Get the dyntable
-  frame<double> tb = makeDynTable(x,y,sx,sy,slc_x,method,clusttable);
+  frame<double> tb = makeDynTable(x,y,sx,sy,slc_x,method,clusttable,marginalFC);
 
   // Return as list
-  return List::create(Named("dyn_table") = tb, Named("clust_table") = clusttable);
+  return List::create(Named("dyn_table") = tb, Named("clust_table") = clusttable,
+                      Named("mar_dyn_table") = marginalFC);
 }
 
 // [[Rcpp::export]]

@@ -32,11 +32,14 @@ mydouble funchisq(const std::vector<std::vector<int> > & O, const std::vector<in
 
 mydouble getFCstats(const frame<int> & O, const std::string method);
 
+mydouble getMarginalFC(const std::vector<int> & O);
+
+std::vector<int> getYmarginal(const std::vector<std::vector<int> > & O, const vec<int> & sorted_uny);
 
 frame<double> makeDynTable(const vec<int> & x, const vec<int> & y,
                            const vec<int> & sorted_unx, const vec<int> & sorted_uny,
                            const vec<int> & slices_x, const std::string method,
-                           frame<int> & clusttable);
+                           frame<int> & clusttable, frame<mydouble> & marginalFC);
 
 frame<int> tableCpp(std::vector<int> x_vec, std::vector<int> y_vec, int xlevels, int ylevels);
 
