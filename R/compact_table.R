@@ -59,19 +59,20 @@ construct_compact_table = function(x, y, full=FALSE){
   org_x = as.character(x)
   org_y = as.character(y)
 
-  # save original labels for X and Y
-  org_unx = levels(as.factor(x))
-  org_uny = levels(as.factor(y))
-
-  # convert to continuous numbers
+  # convert to consecutive numbers
   x = as.numeric(as.factor(x))
   y = as.numeric(as.factor(y))
 
-  # sort x and y
-  y = y[order(x, decreasing = FALSE)]
-  org_x = org_x[order(x, decreasing = FALSE)]
-  org_y = org_y[order(x, decreasing = FALSE)]
-  x = x[order(x, decreasing = FALSE)]
+  # sort x and y according to x
+  ord_x = order(x, decreasing = FALSE)
+  y = y[ord_x]
+  org_x = org_x[ord_x]
+  org_y = org_y[ord_x]
+  x = x[ord_x]
+
+  # save original labels for X and Y
+  org_unx = unique(org_x)
+  org_uny = unique(org_y)
 
   # construct original table
   org_table = table(x, y)
@@ -113,15 +114,14 @@ construct_compact_table = function(x, y, full=FALSE){
     # filter
     subtabs = subtabs[subtabs[,4] < (-3),] # equivalent to 0.05
 
-    # only keep top 10% fi
-    fi_cutoff = sort(subtabs[,5])[round(0.1 * nrow(subtabs))]
-    subtabs = subtabs[subtabs[,5] >= fi_cutoff,]
-
     # min pvalue per starting point
     min_pval_perx = sapply(c(1:nrow(org_table)), function(i){
       perx_pval = subtabs[which(subtabs[,1]==i),4]
       return(ifelse((length(perx_pval)==0 || all(is.na(min(perx_pval)))), 0, min(perx_pval, na.rm = TRUE)))
     })
+
+    # # [conservative]
+    # min_pval_perx = round(min_pval_perx)
 
     # get the smaller index [conservative]
     ind = min(which(min_pval_perx == min(min_pval_perx)))
@@ -135,16 +135,21 @@ construct_compact_table = function(x, y, full=FALSE){
   y = as.numeric(as.factor(xy$y))
 
   # sort x and y
-  y = y[order(x, decreasing = FALSE)]
-  x = x[order(x, decreasing = FALSE)]
+  ord_x = order(x, decreasing = FALSE)
+  y = y[ord_x]
+  x = x[ord_x]
 
   # prepare for compression
   slices_x = which(!duplicated(x))
   slices_x = c(slices_x[2:length(slices_x)],length(x)+1) - 1
 
-  out_dyn = DynTable(X = x, Y = y, sorted_x = c(1:max(x)),
+  out_dyn = DynTable(X = x-1, Y = y-1, sorted_x = c(1:max(x)),
                      sorted_y = c(1:max(y)), slices_x = slices_x,
                      method = "fchisq")
+
+  # get mar dyn table
+  mar_dyn = out_dyn$mar_dyn_table
+
   # get cluster info
   clust_dyn = out_dyn$clust_table
 
@@ -158,10 +163,10 @@ construct_compact_table = function(x, y, full=FALSE){
     for(i in 1:length(out_dyn)){
       pvals = rep(0, length(out_dyn))
       for(j in 1:length(out_dyn)){
-        pvals[j] = pchisq(q = out_dyn[[i]][j],
-                          df = ((j-1)*(max(y)-1)),
-                          lower.tail = FALSE,
-                          log.p = TRUE)
+
+        fc = (out_dyn[[i]][j] - mar_dyn[[i]][j])
+        pvals[j] = pchisq(fc, df = ((j-1)*(ncol(org_table)-1)),
+                          lower.tail = FALSE, log.p = TRUE)
       }
       pval_table[[i]] = pvals
     }
@@ -169,20 +174,25 @@ construct_compact_table = function(x, y, full=FALSE){
     min_pval = which.min(unlist(lapply(pval_table, min)))
     comp_lvls = lapply(pval_table, which.min)[[min_pval]]
 
-    # Adjust slices_x
-    if(min_pval < length(out_dyn)){
-      slices_x = slices_x[1:min_pval]
-      slices_x[1:(min_pval - 1)] = slices_x[1:(min_pval - 1)] + 1
-    } else {
-      slices_x[1:(length(out_dyn) - 1)] = slices_x[1:(length(out_dyn) - 1)] + 1
-    }
+    # prepare the trimmed and compressed table
+    xy = Untable(org_table[c(ind:(ind+min_pval-1)),])
+    x = as.numeric(as.factor(xy$x))
+    y = as.numeric(as.factor(xy$y))
+
+    # sort x and y
+    ord_x = order(x, decreasing = FALSE)
+    y = y[ord_x]
+    x = x[ord_x]
+
+    # get sub-slices
+    slices_x = which(!duplicated(x))
+    slices_x = c(slices_x[2:length(slices_x)],length(x))
 
     # Get the transformed x from clust_table
     temp = 1
     rec_k = clust_dyn[[min_pval]][comp_lvls] + 1
     rec_j = comp_lvls - 1
     x_new = rep(0, slices_x[length(slices_x)])
-
     for(itr in length(x_new) : 1)
     {
       if(rec_k!=0 && itr<(slices_x[rec_k]))
@@ -198,7 +208,7 @@ construct_compact_table = function(x, y, full=FALSE){
     # adjust x_new
     x_new = abs(x_new - (temp+1))
 
-    # adjust old_x
+    # adjust old_x and old_y
     new_org_x = c()
     for(i in ind:(ind+min_pval-1)){
       new_org_x = c(new_org_x, subset(org_x, org_x==org_unx[i]))
@@ -216,7 +226,7 @@ construct_compact_table = function(x, y, full=FALSE){
     slices_x[1:(length(out_dyn) - 1)] = slices_x[1:(length(out_dyn) - 1)] + 1
 
     # Compute p-value for the last row
-    last_row_stat = out_dyn[[length(out_dyn)]]
+    last_row_stat = out_dyn[[length(out_dyn)]] - mar_dyn[[length(out_dyn)]]
     last_row_pvalue = rep(1, length(last_row_stat))
     for(i in 2:length(last_row_stat))
     {
@@ -255,8 +265,8 @@ construct_compact_table = function(x, y, full=FALSE){
       rname_x_new[i] = paste(sort(unique(org_x[x_new == unx_new[i]])),collapse = "#")
   }
 
-  # compact table\
-  ctable = tableRcpp(x_new, y, ylevels = length(org_uny))
+  # compact table
+  ctable = tableRcpp(x_new-1, y-1, ylevels = length(org_uny))
   rownames(ctable) = rname_x_new
   colnames(ctable) = org_uny
   return(ctable)
