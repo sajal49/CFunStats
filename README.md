@@ -49,4 +49,4 @@ full_table = construct_compact_table(x, y, full=TRUE)
 print(full_table)
 ```
 
-
+All evaluation code has been made available at Code Ocean: https://www.doi.org/10.24433/CO.3255869.v1
