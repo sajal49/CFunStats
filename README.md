@@ -1,6 +1,7 @@
 # CFunStats: Compact Functional Statistics
 
-Statistics to preserve continuity, capture discontinuity, and identify locality of discrete functional patterns. The input is discrete data of two variables. A corresponding contingency table is used to encode the discrete pattern. The output is functional statistics on a compact table representing the original table. Rows of the compact table are the trimmed and compressed version of the input table while columns are the same with the input table. The compact table is obtained by dynamic programming. Let the row variable be the independent variable and the column variable be the dependent variable. We characterize the statistical significance and the strength (effect size) of the pattern being a function by the model-free functional chi-squared test. The compact functional statistics can be applied to time-course signals to recognize both temporal continuity and discontinuity while reducing model biases.
+Statistics to preserve continuity, capture discontinuity, and identify locality of discrete functional patterns. The input is discrete data of two variables. A corresponding contingency table is used to encode the discrete pattern. The output is functional statistics on a compact table representing the original table. Rows of the compact table are the trimmed and compressed version of the input table while columns are the same with the input table. The compact table is obtained by dynamic programming. Let the row variable be the independent variable and the column variable be the dependent variable. We characterize the statistical significance and the strength (effect size) of the pattern being a function by the model-free functional chi-squared test. The compact functional statistics can be applied to time-course signals to recognize both temporal continuity and discontinuity while reducing model biases. All evaluation code has been made available at Code Ocean: https://www.doi.org/10.24433/CO.3255869.v1
+
 
 # Installation
 
@@ -48,5 +49,3 @@ print(trimmed_table)
 full_table = construct_compact_table(x, y, full=TRUE)
 print(full_table)
 ```
-
-All evaluation code has been made available at Code Ocean: https://www.doi.org/10.24433/CO.3255869.v1
